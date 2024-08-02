@@ -12,6 +12,12 @@ def initialize_parser(parser):
         help="Species summary csv file.",
     )
     parser.add_argument(
+        "--alleleome_dimensions",
+        type=str,
+        required=True,
+        help="Alleleome dimensions csv file.",
+    )
+    parser.add_argument(
         "--output_pankb_dimension",
         type=str,
         required=True,
@@ -26,32 +32,24 @@ def initialize_parser(parser):
 
 
 def generate_landing_page(
-    species_summary_path, pankb_dimension_path, species_genome_gene_path
+    species_summary_path, alleleome_dimensions_path, pankb_dimension_path, species_genome_gene_path,
 ):
     df_species_summaries = pd.read_csv(species_summary_path, index_col=0)
+    df_alleleome_dimensions = pd.read_csv(alleleome_dimensions_path, index_col=0)
 
-    alleleome_done = ["Lactobacillaceae"]
 
-    N_alleleome = 0
-    Species_coding_alleleome = 0
-    Species_coding_alleleome = []
-
-    # for g in alleleome_done:
-    #     Species_coding_alleleome += len(os.listdir('../data/genus/' + g))
-    #     for s in os.listdir('../data/genus/' + g):
-    #         gene_class = pd.read_csv('../data/genus/' + g + '/' + s + '/roary/df_pangene_summary_v2.csv')
-    #         Core = len(gene_class.loc[gene_class['pangenome_class_2'] == 'Core',:])
-    #         N_alleleome += Core
+    N_alleleome = int(df_alleleome_dimensions["N_genes"].sum())
+    N_mutations = int(df_alleleome_dimensions["N_muts"].sum())
 
     gene_cluster_count = int(df_species_summaries["N_of_gene"].sum())
     genome_count = int(df_species_summaries["N_of_genome"].sum())
     species_count = int(df_species_summaries.shape[0])
     dimension = {
+        "Mutations": N_mutations,
         "Genes": gene_cluster_count,
-        "Coding alleleomes": N_alleleome,
+        "Alleleomes": N_alleleome,
         "Genomes": genome_count,
         "Species pangenomes": species_count,
-        "Species coding alleleomes": Species_coding_alleleome,
     }
     with open(pankb_dimension_path, "w") as f:
         json.dump(dimension, f)
@@ -75,6 +73,7 @@ def generate_landing_page(
 def run(args):
     generate_landing_page(
         args.species_summary,
+        args.alleleome_dimensions,
         args.output_pankb_dimension,
         args.output_json,
     )
