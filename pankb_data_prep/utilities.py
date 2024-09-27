@@ -1,5 +1,6 @@
 import pandas as pd
-
+import numpy as np
+from scipy.stats import linregress
 
 def get_genome_list(args):
     with open(args.genomes, "r") as f:
@@ -39,3 +40,32 @@ COG_TABLE = pd.DataFrame.from_dict(
 )
 # COG_TABLE.index.name = "Categories"
 COG_TABLE["Categories"] = COG_TABLE.index
+
+def calculate_lambda(gene_presence_matrix, num_samples=30, num_repetitions=50):
+    np.random.seed(1)
+    num_genomes, num_genes = gene_presence_matrix.shape
+    lambda_values = []
+
+    for _ in range(num_repetitions):
+        # Randomly sample 30 genomes
+        sampled_matrix = gene_presence_matrix.sample(n=min(num_samples, num_genomes), replace=False)
+        
+        # Calculate pangenome size for increasing numbers of genomes
+        x = np.arange(1, len(sampled_matrix) + 1)
+        y = np.zeros(len(sampled_matrix))
+        
+        for i in range(len(sampled_matrix)):
+            y[i] = np.sum(np.any(sampled_matrix.iloc[:i+1], axis=0))
+        
+        # Perform linear regression on log-transformed data
+        slope, _, _, _, _ = linregress(np.log(x), np.log(y))
+        
+        # Calculate lambda 
+        lambda_value = slope
+        lambda_values.append(lambda_value)
+    
+    # Calculate mean and standard deviation of lambda values
+    mean_lambda = np.mean(lambda_values)
+    std_lambda = np.std(lambda_values)
+    
+    return mean_lambda, std_lambda

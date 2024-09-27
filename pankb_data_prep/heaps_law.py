@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_absolute_error
 import math
-from scipy.stats import linregress
 import json
+from .utilities import calculate_lambda
 
 def initialize_parser(parser):
     parser.description = "Process data to apply Heaps law."
@@ -99,15 +99,7 @@ def heaps_law(gp_binary_path, gene_freq_path):
 
     # -------------------------------------------------------------------------------------------------------------- #
 
-    # Assuming you have the x and y values for the Heap's law curve
-    x = np.arange(num_genomes) + 1  # Array of genome numbers
-    y = avg_pan  # Array of unique gene counts
-
-    # Perform linear regression
-    slope, _, _, _, _ = linregress(np.log(x), np.log(y))
-
-    # The slope represents the exponent in Heap's law equation (β)
-    # logging.info("Slope (β):", slope)
+    mean_lambda, std_lambda = calculate_lambda(gene_presence_matrix)
 
     # -------------------------------------------------------------------------------------------------------------- #
 
@@ -123,7 +115,7 @@ def heaps_law(gp_binary_path, gene_freq_path):
                 'max_cumulative':int(df['cumulative_frequency'].max()),'rare_max_cumulative':int(df.loc[:x15,'cumulative_frequency'].max()),
                 'accessory_max_cumulative':int(df.loc[x15:x99,'cumulative_frequency'].max()),
                 'core_max_cumulative':int(df.loc[x99:,'cumulative_frequency'].max()),
-                'alpha': 1-slope}
+                'alpha': mean_lambda}
 
     with open(gene_freq_path, 'w') as f:
         json.dump(data_dict, f)

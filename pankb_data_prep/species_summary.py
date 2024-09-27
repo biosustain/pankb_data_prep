@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 import json
+from .utilities import calculate_lambda
 
 def initialize_parser(parser):
     parser.description = "Generate species summary."
@@ -41,6 +42,11 @@ def initialize_parser(parser):
         help="Output in json format.",
     )
 
+def openness_check(mean_lambda):
+    if mean_lambda < 0.3:
+        return 'Closed'
+    else:
+        return 'Intermediate Open'
 
 def species_pangenome_summary(
     analysis_name,
@@ -83,6 +89,11 @@ def species_pangenome_summary(
         ].count()
     )
 
+    #TODO Remove .T by changing calculate_lambda to sample different axis
+    mean_lambda, std_lambda = calculate_lambda(df_gp_binary.T)
+    openness = openness_check(mean_lambda)
+    # openness = "Open"
+
     df = pd.DataFrame(
         {
             "Pangenome_analyses": [analysis_name],
@@ -93,7 +104,7 @@ def species_pangenome_summary(
             "N_of_core": [core_len],
             "N_of_rare": [rare_len],
             "N_of_accessory": [accessory_len],
-            "Openness": ["Open"],
+            "Openness": [openness],
         }
     )
     df.to_csv(species_summary_csv_path, index=False)
@@ -103,7 +114,7 @@ def species_pangenome_summary(
         "Species": species,
         "Number_of_genome": n_genomes,
         "Gene_class": [core_len, accessory_len, rare_len],
-        "Openness": "Open",
+        "Openness": openness,
     }
     with open(species_summary_json_path, "w") as f:
         json.dump(json_data, f)
