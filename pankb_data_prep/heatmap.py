@@ -51,10 +51,16 @@ def initialize_parser(parser):
     #     help="Species info df_ncbi_meta csv file.",
     # )
     parser.add_argument(
-        "--output_json",
+        "--heatmap_base",
         type=str,
         required=True,
-        help="Output in json format.",
+        help="Basename for the heatmap output, class + '.json.gz' will be added.",
+    )
+    parser.add_argument(
+        "--sourceinfo_base",
+        type=str,
+        required=True,
+        help="Basename for the source info output, class + '.json' will be added.",
     )
 
 
@@ -144,7 +150,8 @@ def generate_heatmap(
     mash_list_path,
     isosource_path,
     # species_info_path,
-    heatmap_target_path,
+    heatmap_base_path,
+    sourceinfo_base_path,
 ):
     # load data
     gp_binary = pd.read_csv(gp_binary_path, index_col=0, low_memory=False).T
@@ -211,33 +218,33 @@ def generate_heatmap(
         "matrix": matrix(gp_binary_ordered.loc[:, target_gene_ordered]),
     }
 
-    with open(heatmap_target_path, "w") as file:
-        json.dump(result_dict_target, file)
-
-    # gzip_file(heatmap_target_path, heatmap_target_path.with_suffix(heatmap_target_path.suffix + ".gz"))
+    with gzip.open(f"{heatmap_base_path}target.json.gz", "wt") as handle:
+        json.dump(result_dict_target, handle)
 
     # gene_count = 0
 
-    # for gene_class in ['core', 'accessory', '1_15', 'above_1', 'only_1']:
-    #     if gene_class == 'core':
-    #         freq_filtered_gene = list(summary.loc[summary['pangenome_class_2'] == 'Core', :].index)
-    #     elif gene_class == 'accessory':
-    #         freq_filtered_gene = list(summary.loc[summary['pangenome_class_2'] == 'Accessory', :].index)
-    #     elif gene_class == '1_15':
-    #         freq_filtered_gene = list(summary.loc[(summary['pangenome_class_2'] == 'Rare') & (summary['frequency'] >= 0.01), :].index)
-    #     elif gene_class == 'above_1':
-    #         freq_filtered_gene = list(summary.loc[(summary['pangenome_class_2'] == 'Rare') & (summary['frequency'] < 0.01) & (summary['No. isolates'] > 1), :].index)
-    #     else:
-    #         freq_filtered_gene = list(summary.loc[summary['No. isolates'] == 1, :].index)
+    for gene_class in ['core', 'accessory', '1_15', 'above_1', 'only_1']:
+        if gene_class == 'core':
+            freq_filtered_gene = list(summary.loc[summary['pangenome_class_2'] == 'Core', :].index)
+        elif gene_class == 'accessory':
+            freq_filtered_gene = list(summary.loc[summary['pangenome_class_2'] == 'Accessory', :].index)
+        elif gene_class == '1_15':
+            freq_filtered_gene = list(summary.loc[(summary['pangenome_class_2'] == 'Rare') & (summary['frequency'] >= 0.01), :].index)
+        elif gene_class == 'above_1':
+            freq_filtered_gene = list(summary.loc[(summary['pangenome_class_2'] == 'Rare') & (summary['frequency'] < 0.01) & (summary['No. isolates'] > 1), :].index)
+        else:
+            freq_filtered_gene = list(summary.loc[summary['No. isolates'] == 1, :].index)
 
-    #     with open('../web_data/species/' + species + '/source_info' + '_' + gene_class + '.json', 'w') as file:
-    #         json.dump(source_info(source), file)
+        with open(f"{sourceinfo_base_path}{gene_class}.json", 'w') as f:
+            json.dump(source_info(source), f)
 
-    #     result_dict_target = {"rows":rows(source),
-    #                     "cols":cols(summary.loc[freq_filtered_gene,:],
-    #                                 annotation.loc[freq_filtered_gene,:],
-    #                                 gp_locustag_ordered.loc[freq_filtered_gene,:]),
-    #                     "matrix":matrix(gp_binary_ordered.loc[:,freq_filtered_gene])}
+        result_dict_target = {"rows":rows(source),
+                        "cols":cols(summary.loc[freq_filtered_gene,:],
+                                    annotation.loc[freq_filtered_gene,:],
+                                    gp_locustag_ordered.loc[freq_filtered_gene,:]),
+                        "matrix":matrix(gp_binary_ordered.loc[:,freq_filtered_gene])}
+        with gzip.open(f"{heatmap_base_path}{gene_class}.json.gz", "wt") as handle:
+            json.dump(result_dict_target, handle)
 
     #     with open('../web_data/species/' + species + '/heatmap' + '_' + gene_class + '.json', 'w') as file:
     #         json.dump(result_dict_target, file)
@@ -256,7 +263,8 @@ def run(args):
         args.mash_list,
         args.isosource,
         # args.species_info,
-        args.output_json,
+        args.heatmap_base,
+        args.sourceinfo_base,
     )
 
 
