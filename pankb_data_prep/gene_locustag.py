@@ -76,11 +76,11 @@ def generate_locustag_data(gp_locustag_path, all_locustag_path, fasta_dir, gene_
                     logging.warn(f"Locustag not in all_locustag_df: {gene_locustag}")
 
         s_df = all_locustag_df.loc[gene_locustag, :].copy()
-        s_df["nucleotide_seq"] = ""
-        s_df["aminoacid_seq"] = ""
+        s_df["Nucleotide_Seq"] = ""
+        s_df["Amino_Acid_Seq"] = ""
         gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
 
-        for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
+        for k, ext in [("Nucleotide_Seq", "fna"), ("Amino_Acid_Seq", "faa")]:
             for basename in ["pan_genes", "others"]:
                 gene_fasta_path = fasta_dir / gene_id / f"{basename}.{ext}"
                 if gene_fasta_path.is_file():
