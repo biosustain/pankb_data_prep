@@ -82,7 +82,7 @@ def generate_locustag_data(gp_locustag_path, all_locustag_path, fasta_dir, gene_
 
         for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
             for basename in ["pan_genes", "others"]:
-                gene_fasta_path = fasta_dir / gene_id / f"{base_name}.{ext}"
+                gene_fasta_path = fasta_dir / gene_id / f"{basename}.{ext}"
                 if gene_fasta_path.is_file():
                     for record in SeqIO.parse(gene_fasta_path, "fasta"):
                         if record.id in gene_locustag_only:
