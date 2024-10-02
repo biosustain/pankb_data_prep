@@ -22,6 +22,12 @@ def initialize_parser(parser):
         help="Locustag info df_all_locustag csv file.",
     )
     parser.add_argument(
+        "--fasta_dir",
+        type=str,
+        required=True,
+        help="Directory containing per-gene folders with .fna and .faa files."
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -37,9 +43,10 @@ def remove_slash(s):
         return s
 
 
-def generate_locustag_data(gp_locustag_path, all_locustag_path, gene_locustag_dir):
+def generate_locustag_data(gp_locustag_path, all_locustag_path, fasta_dir, gene_locustag_dir):
     gene_locustag_dir = Path(gene_locustag_dir)
     gene_locustag_dir.mkdir(parents=True, exist_ok=True)
+    fasta_dir = Path(fasta_dir)
     df_gene_presence_locustag = pd.read_csv(
         gp_locustag_path, index_col="Gene", low_memory=False
     )
@@ -68,10 +75,25 @@ def generate_locustag_data(gp_locustag_path, all_locustag_path, gene_locustag_di
                 else:
                     logging.warn(f"Locustag not in all_locustag_df: {gene_locustag}")
 
+        s_df = all_locustag_df.loc[gene_locustag, :].copy()
+        s_df["nucleotide_seq"] = ""
+        s_df["aminoacid_seq"] = ""
+        gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
+
+        for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
+            for basename in ["pan_genes", "others"]:
+                gene_fasta_path = fasta_dir / gene_id / f"{base_name}.{ext}"
+                if gene_fasta_path.is_file():
+                    for record in SeqIO.parse(gene_fasta_path, "fasta"):
+                        if record.id in gene_locustag_only:
+                            lt = gene_locustag[gene_locustag_only.index(record.id)]
+                            s_df.loc[lt, k] = str(record.seq)
+
+
         # Write the JSON object to a file
         with open(gene_locustag_dir / f"{gene_id}.json", "w") as f:
             json.dump(
-                all_locustag_df.loc[gene_locustag, :].to_dict(orient="records"),
+                s_df.to_dict(orient="records"),
                 f,
                 separators=(",", ":"),
                 ensure_ascii=False,
@@ -82,6 +104,7 @@ def run(args):
     generate_locustag_data(
         args.gp_locustag,
         args.all_locustag,
+        args.fasta_dir,
         args.output,
     )
 
