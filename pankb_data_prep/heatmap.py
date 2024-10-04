@@ -44,12 +44,12 @@ def initialize_parser(parser):
         required=True,
         help="Isolation source file.",
     )
-    # parser.add_argument(
-    #     "--species_info",
-    #     type=str,
-    #     required=True,
-    #     help="Species info df_ncbi_meta csv file.",
-    # )
+    parser.add_argument(
+        "--species_info",
+        type=str,
+        required=True,
+        help="Species info df_ncbi_meta csv file.",
+    )
     parser.add_argument(
         "--heatmap_base",
         type=str,
@@ -85,8 +85,8 @@ def rows(source):
     genome = source.index
 
     genome_list = []
-    for i in range(len(genome)):
-        genome_list.append({"name": genome[i], "meta": [str(source.iloc[i, 4])]})
+    for genome, row in source.iterrows():
+        genome_list.append({"name": genome, "meta": [str(row["cluster"])]})
     return genome_list
 
 
@@ -125,12 +125,11 @@ def source_info(source):
     # get the genomes' name (index label)
     genome = source.index
 
-    genome_dict = {}
-    for i in range(len(genome)):
-        genome_dict[str(genome[i])] = [
-            str(source.iloc[i, 1]),
-            str(source.iloc[i, 0]),
-            str(source.iloc[i, 3]),
+    for genome, row in source.iterrows():
+        genome_dict[str(genome)] = [
+            str(row["Country"]),
+            str(row["isolation_source"]),
+            str(row["full_name"]),
         ]
     return genome_dict
 
@@ -149,7 +148,7 @@ def generate_heatmap(
     eggnog_summary_path,
     mash_list_path,
     isosource_path,
-    # species_info_path,
+    species_info_path,
     heatmap_base_path,
     sourceinfo_base_path,
 ):
@@ -161,7 +160,7 @@ def generate_heatmap(
     gp_locustag = pd.read_csv(gp_locustag_path, index_col=0, low_memory=False)
     phylo_group = pd.read_csv(mash_list_path, index_col=0, low_memory=False)
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
-    # species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
+    species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
 
     # species_info["genome_name"] = (
     #     species_info["genus"]
@@ -170,8 +169,10 @@ def generate_heatmap(
     #     + " "
     #     + species_info["strain"]
     # )
+    genomes = list(gp_locustag.columns)
     source = pd.merge(
-        isolation_src.loc[list(gp_locustag.columns), :],
+        isolation_src.loc[genomes, :],
+        species_info.loc[genomes, :],
         # pd.merge(
             
         #     species_info.loc[
@@ -262,7 +263,7 @@ def run(args):
         args.eggnog_summary,
         args.mash_list,
         args.isosource,
-        # args.species_info,
+        args.species_info,
         args.heatmap_base,
         args.sourceinfo_base,
     )
