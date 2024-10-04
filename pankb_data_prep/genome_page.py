@@ -78,7 +78,7 @@ def generate_genome_page(
                     species_selection,
                     ["source", "gc_content", "genome_len"],
                 ],
-                species_info[species_selection, "full_name"]
+                species_info.loc[species_selection, "full_name"]
         ],
         axis=1,
     )
