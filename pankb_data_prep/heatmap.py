@@ -161,6 +161,7 @@ def generate_heatmap(
     phylo_group = pd.read_csv(mash_list_path, index_col=0, low_memory=False)
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
     species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
+    species_info.index.name = "genome_id"
 
     # species_info["genome_name"] = (
     #     species_info["genus"]
@@ -170,11 +171,15 @@ def generate_heatmap(
     #     + species_info["strain"]
     # )
     genomes = list(gp_locustag.columns)
-    source = pd.concat([
+    source = pd.merge(
         isolation_src.loc[genomes, :],
-        species_info.loc[genomes, :],
-        phylo_group,
-    ]).sort_values("cluster")
+        pd.merge(
+            species_info.loc[genomes, :],
+            phylo_group,
+            on=["genome_id"],
+        ),
+        on=["genome_id"],
+    ).sort_values("cluster")
     gp_locustag_ordered = gp_locustag.loc[:, list(source.index)]
     gp_binary_ordered = gp_binary.loc[list(source.index), :]
 
