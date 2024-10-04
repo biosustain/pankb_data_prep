@@ -170,15 +170,11 @@ def generate_heatmap(
     #     + species_info["strain"]
     # )
     genomes = list(gp_locustag.columns)
-    source = pd.merge(
+    source = pd.concat([
         isolation_src.loc[genomes, :],
-        pd.merge(
-            species_info.loc[genomes, :],
-            phylo_group,
-            on=["genome_id"],
-        ),
-        on=["genome_id"],
-    ).sort_values("cluster")
+        species_info.loc[genomes, :],
+        phylo_group,
+    ]).sort_values("cluster")
     gp_locustag_ordered = gp_locustag.loc[:, list(source.index)]
     gp_binary_ordered = gp_binary.loc[list(source.index), :]
 
