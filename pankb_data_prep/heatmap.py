@@ -81,9 +81,6 @@ def filter_cluster(l):
 def rows(source):
     source = source.replace("Missing", "undefined")
 
-    # get the genomes' name (index label)
-    genome = source.index
-
     genome_list = []
     for genome, row in source.iterrows():
         genome_list.append({"name": genome, "meta": [str(row["cluster"])]})
@@ -122,8 +119,7 @@ def matrix(gp_binary):
 def source_info(source):
     source = source.replace("Missing", "undefined")
 
-    # get the genomes' name (index label)
-    genome = source.index
+    genome_dict = {}
 
     for genome, row in source.iterrows():
         genome_dict[str(genome)] = [
