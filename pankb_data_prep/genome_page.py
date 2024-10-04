@@ -88,7 +88,7 @@ def generate_genome_page(
     annotation = pd.read_csv(eggnog_summary_path, index_col=0, low_memory=False)
 
     annotation["COG_Categories"] = (
-        "[" + annotation["COG_category"] + "]" + annotation["COG_category_name"]
+        "[" + annotation["COG_category_name"] + "]" + annotation["COG_category"]
     )
     cog_pan_class = pd.merge(
         summary["pangenome_class_2"],
