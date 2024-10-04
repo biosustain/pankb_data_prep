@@ -32,7 +32,7 @@ def generate_cog_distribution(
     summary = pd.read_csv(summary_v2_path, index_col=0, low_memory=False)
     annotation = pd.read_csv(eggnog_summary_path, index_col=0, low_memory=False)
     annotation["COG_Categories"] = (
-        "[" + annotation["COG_category_name"] + "]" + annotation["COG_category"]
+        "[" + annotation["COG_category"] + "]" + annotation["COG_category_name"]
     )
     cog_pan_class = pd.merge(
         summary["pangenome_class_2"],
@@ -81,7 +81,7 @@ def generate_cog_distribution(
             "Core": core,
             "Accessory": accessory,
             "Rare": rare,
-            "Category": "[" + COG_TABLE.iloc[:, 0] + "]" + " " + COG_TABLE.iloc[:, 1],
+            "Category": "[" + COG_TABLE.iloc[:, 1] + "]" + " " + COG_TABLE.iloc[:, 0],
         }
     )
     geneclass_df["All"] = geneclass_df.iloc[:, :3].sum(axis=1)
