@@ -38,12 +38,12 @@ def initialize_parser(parser):
         required=True,
         help="Isolation source file.",
     )
-    # parser.add_argument(
-    #     "--species_info",
-    #     type=str,
-    #     required=True,
-    #     help="Species info df_ncbi_meta csv file.",
-    # )
+    parser.add_argument(
+        "--species_info",
+        type=str,
+        required=True,
+        help="Species info df_ncbi_meta csv file.",
+    )
     parser.add_argument(
         "--output",
         "-o",
@@ -56,7 +56,7 @@ def initialize_parser(parser):
 def generate_genome_page(
     species_summary_path,
     isosource_path,
-    # species_info_path,
+    species_info_path,
     gp_binary_path,
     summary_v2_path,
     eggnog_summary_path,
@@ -65,10 +65,10 @@ def generate_genome_page(
     genome_page_dir = Path(genome_page_dir)
     genome_summary = pd.read_csv(species_summary_path, index_col=0, low_memory=False)
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
-    # species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
-    # species_info["full_name"] = (
-        # species_info.genus + " " + species_info.species + " " + species_info.strain
-    # )
+    species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
+    species_info["full_name"] = (
+        species_info.genus + " " + species_info.species + " " + species_info.strain
+    )
     # species_info_selected = species_info.loc[list(isolation_src.index), :]
     species_selection = list(isolation_src.index)
     genome_info = pd.concat(
@@ -78,6 +78,7 @@ def generate_genome_page(
                     species_selection,
                     ["source", "gc_content", "genome_len"],
                 ],
+                species_info[species_selection, "full_name"]
         ],
         axis=1,
     )
@@ -189,7 +190,7 @@ def run(args):
     generate_genome_page(
         args.species_summary,
         args.isosource,
-        # args.species_info,
+        args.species_info,
         args.gp_binary,
         args.summary,
         args.eggnog_summary,
