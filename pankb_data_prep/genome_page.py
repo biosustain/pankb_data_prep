@@ -66,9 +66,9 @@ def generate_genome_page(
     genome_summary = pd.read_csv(species_summary_path, index_col=0, low_memory=False)
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
     species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
-    species_info["full_name"] = (
-        species_info.genus + " " + species_info.species + " " + species_info.strain
-    )
+    # species_info["full_name"] = (
+    #     species_info.genus + " " + species_info.species + " " + species_info.strain
+    # )
     # species_info_selected = species_info.loc[list(isolation_src.index), :]
     species_selection = list(isolation_src.index)
     genome_info = pd.concat(
