@@ -66,7 +66,7 @@ def species_pangenome_summary(
     df_gp_binary = pd.read_csv(gp_binary_path, index_col="Gene", low_memory=False)
     df_pangene_summary = pd.read_csv(summary_v2_path, low_memory=False, index_col=0)
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
-    df_codon_muts = pd.read_csv(codon_muts_path, low_memory=False)
+    df_codon_muts = pd.read_csv(codon_muts_path, header=0, index_col=False, usecols=['Gene'])
 
     genomes = df_gp_binary.columns.tolist()
     n_genomes = len(genomes)
