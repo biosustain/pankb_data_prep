@@ -72,7 +72,7 @@ def species_pangenome_summary(
     genomes = df_gp_binary.columns.tolist()
     n_genomes = len(genomes)
     n_genes = int(df_pangene_summary.shape[0])
-    n_alleleomes = int(df_filt_norm.nunique().iloc[0])
+    n_alleleomes = int(df_filt_norm.nunique())
     n_muts = int(df_filt_norm.shape[0])
 
     # TODO
