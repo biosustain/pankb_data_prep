@@ -23,6 +23,12 @@ def initialize_parser(parser):
         help="Pangene summary csv file.",
     )
     parser.add_argument(
+        "--codon_muts",
+        type=str,
+        required=True,
+        help="Alleleome codon_muts csv file.",
+    )
+    parser.add_argument(
         "--gtdb_meta",
         type=str,
         required=True,
@@ -53,16 +59,20 @@ def species_pangenome_summary(
     gp_binary_path,
     summary_v2_path,
     gtdb_meta_path,
+    codon_muts_path,
     species_summary_csv_path,
     species_summary_json_path,
 ):
     df_gp_binary = pd.read_csv(gp_binary_path, index_col="Gene", low_memory=False)
     df_pangene_summary = pd.read_csv(summary_v2_path, low_memory=False, index_col=0)
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
+    df_codon_muts = pd.read_csv(codon_muts_path, low_memory=False)
 
     genomes = df_gp_binary.columns.tolist()
     n_genomes = len(genomes)
     n_genes = int(df_pangene_summary.shape[0])
+    n_alleleomes = int(df_codon_muts.nunique())
+    n_muts = int(df_codon_muts.shape[0])
 
     # TODO
     # print(set(df_gtdb_meta.loc[genomes, "Family"]))
@@ -104,6 +114,8 @@ def species_pangenome_summary(
             "N_of_core": [core_len],
             "N_of_rare": [rare_len],
             "N_of_accessory": [accessory_len],
+            "N_of_alleome": [n_alleleomes],
+            "N_of_mutations": [n_muts],
             "Openness": [openness],
         }
     )
@@ -115,6 +127,9 @@ def species_pangenome_summary(
         "Number_of_genome": n_genomes,
         "Gene_class": [core_len, accessory_len, rare_len],
         "Openness": openness,
+        "Number_of_gene": n_genes,
+        "Number_of_alleleome": n_alleleomes,
+        "Number_of_mutations": n_muts,
     }
     with open(species_summary_json_path, "w") as f:
         json.dump(json_data, f)
@@ -126,6 +141,7 @@ def run(args):
         args.gp_binary,
         args.summary,
         args.gtdb_meta,
+        args.codon_muts,
         args.output,
         args.output_json,
     )
