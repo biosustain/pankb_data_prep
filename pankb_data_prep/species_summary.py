@@ -23,10 +23,10 @@ def initialize_parser(parser):
         help="Pangene summary csv file.",
     )
     parser.add_argument(
-        "--codon_muts",
+        "--filt_norm",
         type=str,
         required=True,
-        help="Alleleome codon_muts csv file.",
+        help="Alleleome filt_norm csv file.",
     )
     parser.add_argument(
         "--gtdb_meta",
@@ -59,20 +59,21 @@ def species_pangenome_summary(
     gp_binary_path,
     summary_v2_path,
     gtdb_meta_path,
-    codon_muts_path,
+    filt_norm_path,
     species_summary_csv_path,
     species_summary_json_path,
 ):
     df_gp_binary = pd.read_csv(gp_binary_path, index_col="Gene", low_memory=False)
     df_pangene_summary = pd.read_csv(summary_v2_path, low_memory=False, index_col=0)
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
-    df_codon_muts = pd.read_csv(codon_muts_path, header=0, index_col=False, usecols=['Gene'])
+    df_filt_norm = pd.read_csv(filt_norm_path, header=0, index_col=False, usecols=['Gene', 'Sequence_type'])
+    df_filt_norm = df_filt_norm.loc[df_filt_norm["Sequence_type"] == "Variant", "Gene"]
 
     genomes = df_gp_binary.columns.tolist()
     n_genomes = len(genomes)
     n_genes = int(df_pangene_summary.shape[0])
-    n_alleleomes = int(df_codon_muts.nunique())
-    n_muts = int(df_codon_muts.shape[0])
+    n_alleleomes = int(df_filt_norm.nunique().iloc[0])
+    n_muts = int(df_filt_norm.shape[0])
 
     # TODO
     # print(set(df_gtdb_meta.loc[genomes, "Family"]))
@@ -141,7 +142,7 @@ def run(args):
         args.gp_binary,
         args.summary,
         args.gtdb_meta,
-        args.codon_muts,
+        args.filt_norm,
         args.output,
         args.output_json,
     )
