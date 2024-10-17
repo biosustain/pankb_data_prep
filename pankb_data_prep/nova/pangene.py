@@ -170,7 +170,7 @@ def pangene_info(
     gene_data = []
     pathway_data = {}
     for gene, row in df.iterrows():
-        pathways = row["KEGG_Pathway"].split(",") if row[k] != "-" else []
+        pathways = row["KEGG_Pathway"].split(",") if row["KEGG_Pathway"] != "-" else []
         pathways = [
             p
             for p in pathways
