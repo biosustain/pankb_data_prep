@@ -2,3 +2,4 @@
 __pycache__/
 pankb_data_prep.egg-info
 build/
+data/
