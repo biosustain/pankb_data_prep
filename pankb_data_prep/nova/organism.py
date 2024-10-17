@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 import json
-from .utilities import calculate_lambda
+from ..utilities import calculate_lambda
 
 def initialize_parser(parser):
     parser.description = "Generate species summary."
