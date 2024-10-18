@@ -57,9 +57,10 @@ def generate_locustag_data(gp_locustag_path, all_locustag_path, fasta_dir, gene_
 
     for gene_id in df_gene_presence_locustag.index.tolist():
         gene_locustag = []
-        for genome_id, locus_tag in (
-            df_gene_presence_locustag.loc[gene_id, :].dropna()
-        ).items():
+        locus_tag_series = df_gene_presence_locustag.loc[gene_id, :].dropna()
+        locus_tag_series = locus_tag_series.str.split("\t")
+        locus_tag_series = locus_tag_series.explode()
+        for genome_id, locus_tag in locus_tag_series.items():
             if "\t" in locus_tag:
                 locus_tag_list = locus_tag.split("\t")
                 for locus_tag_id in locus_tag_list:
