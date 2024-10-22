@@ -39,6 +39,12 @@ def initialize_parser(parser):
         help="GTDB meta csv file.",
     )
     parser.add_argument(
+        "--locus_tag_mapping",
+        type=str,
+        required=True,
+        help="Locus tag mapping csv file.",
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -47,7 +53,7 @@ def initialize_parser(parser):
     )
 
 def gene_info(
-    analysis_name, gp_locustag_path, all_locustag_path, fasta_dir, gtdb_meta_path, output_path
+    analysis_name, gp_locustag_path, all_locustag_path, fasta_dir, gtdb_meta_path, locus_tag_mapping_path, output_path
 ):
     fasta_dir = Path(fasta_dir)
     df_gene_presence_locustag = pd.read_csv(
@@ -69,6 +75,8 @@ def gene_info(
     )
     all_locustag_df.drop(["Nucleotide_Len", "less_than_2std_less_than_mean"], inplace=True, axis=1)
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
+
+    df_locus_tag_mapping = pd.read_csv(locus_tag_mapping_path, index_col=["prokka_locus_tag","genome"])
 
     species = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Organism"]).replace(
         "s__", ""
@@ -106,6 +114,16 @@ def gene_info(
             s_df["aminoacid_seq"] = ""
             s_df["species"] = species
             s_df["pangenome_analysis"] = analysis_name
+
+            for ind, row in s_df.items():
+                try:
+                    lt_map = df_locus_tag_mapping.loc[(row["locus_tag"], row["genome_id"]), :]
+                except:
+                    continue
+                row["original_locus_tag"] = lt_map["original_locus_tag"]
+                row["original_gene"] = lt_map["original_gene"]
+                row["original_exact_match"] = lt_map["exact_match"]
+
             gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
 
             for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
@@ -136,6 +154,7 @@ def run(args):
         args.all_locustag,
         args.fasta_dir,
         args.gtdb_meta,
+        args.locus_tag_mapping,
         args.output,
     )
 
