@@ -13,5 +13,5 @@ setup(
         "scikit-learn==1.5.0",
     ],
     package_data={"pankb_data_prep": []},
-    entry_points={"console_scripts": ["pankb_data_prep=pankb_data_prep.cli:main", "pankb_nova=pankb_data_prep.nova_cli:main"]},
+    entry_points={"console_scripts": ["pankb_data_prep=pankb_data_prep.cli:main", "pankb_nova=pankb_data_prep.nova_cli:main", "pankb_imodulon=pankb_data_prep.imodulon_cli:main"]},
 )
