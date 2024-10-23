@@ -53,7 +53,7 @@ def organism_data(
     
     df_samples = pd.read_csv(samples_path, index_col="genome_id")
     
-    cur_organism = analysis_name[analysis_name]
+    cur_organism = IMODULON_DATA[analysis_name]
     genomes = []
     for genome in cur_organism.keys():
         if genome in df_samples.index:
