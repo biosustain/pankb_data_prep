@@ -168,6 +168,7 @@ def gene_info(
                 row["original_locus_tag"] = lt_map["original_locus_tag"]
                 row["original_gene"] = lt_map["original_gene"]
                 row["original_exact_match"] = lt_map["exact_match"]
+                s_df[ind] = row
             
             if not df_imodulon_tag_mapping is None:
                 for ind, row in s_df.iterrows():
@@ -197,6 +198,7 @@ def gene_info(
                         }
                         d.append(iM_data)
                     row["imodulon_data"] = d
+                    s_df[ind] = row
 
             gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
 
