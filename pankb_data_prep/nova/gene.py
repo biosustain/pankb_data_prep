@@ -116,7 +116,10 @@ def gene_info(
     if imodulon_tag_mapping_path is None:
         df_imodulon_tag_mapping = None
     else:
-        df_imodulon_tag_mapping = pd.read_csv(imodulon_tag_mapping_path, index_col=["prokka_locus_tag","genome"])
+        try:
+            df_imodulon_tag_mapping = pd.read_csv(imodulon_tag_mapping_path, index_col=["prokka_locus_tag","genome"])
+        except pd.errors.EmptyDataError:
+            df_imodulon_tag_mapping = None
 
     species = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Organism"]).replace(
         "s__", ""
