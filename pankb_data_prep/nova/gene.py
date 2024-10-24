@@ -160,9 +160,19 @@ def gene_info(
             s_df["species"] = species
             s_df["pangenome_analysis"] = analysis_name
 
+            for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
+                for basename in ["pan_genes", "others"]:
+                    gene_fasta_path = fasta_dir / gene_id / f"{basename}.{ext}"
+                    if gene_fasta_path.is_file():
+                        for record in SeqIO.parse(gene_fasta_path, "fasta"):
+                            if record.id in gene_locustag_only:
+                                lt = gene_locustag[gene_locustag_only.index(record.id)]
+                                s = str(record.seq)
+                                s_df.loc[lt, k] = s
+
             s_dict = s_df.to_dict(orient="records")
 
-            for ind, row in s_dict.items():
+            for row in s_dict:
                 try:
                     lt_map = df_locus_tag_mapping.loc[(row["locus_tag"], row["genome_id"]), :]
                 except:
@@ -173,7 +183,7 @@ def gene_info(
                 # s_df[ind] = row
             
             if not df_imodulon_tag_mapping is None:
-                for ind, row in s_dict.items():
+                for row in s_dict:
                     if not row["genome_id"] in imodulon_structure:
                         continue
                     try:
@@ -204,18 +214,7 @@ def gene_info(
 
             gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
 
-            for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
-                for basename in ["pan_genes", "others"]:
-                    gene_fasta_path = fasta_dir / gene_id / f"{basename}.{ext}"
-                    if gene_fasta_path.is_file():
-                        for record in SeqIO.parse(gene_fasta_path, "fasta"):
-                            if record.id in gene_locustag_only:
-                                lt = gene_locustag[gene_locustag_only.index(record.id)]
-                                s = str(record.seq)
-                                # s_df.loc[lt, k] = s
-                                s_dict[lt][k] = s
-
-            for record in s_dict.values(): #s_df.to_dict(orient="records"):
+            for record in s_dict: #s_df.to_dict(orient="records"):
                 json.dump(
                     record,
                     f,
