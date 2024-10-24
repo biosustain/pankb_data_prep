@@ -49,6 +49,13 @@ def initialize_parser(parser):
         help="GTDB meta csv file.",
     )
     parser.add_argument(
+        "--imodulon_dir",
+        type=str,
+        required=False,
+        default=None,
+        help="Directory contain iModulonDB info."
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -56,6 +63,22 @@ def initialize_parser(parser):
         help="Output file or directory.",
     )
 
+def get_imodulon_structure(imodulon_dir_path):
+    s = {}
+    if imodulon_dir_path is None:
+        return s
+    imodulon_dir_path = Path(imodulon_dir_path)
+    if not imodulon_dir_path.is_dir():
+        return s
+    imodulon_genomes = [x.name for x in imodulon_dir_path.iterdir() if x.is_dir()]
+    for genome in imodulon_genomes:
+        genome_path = imodulon_dir_path / genome
+        with open(genome_path / "info.txt", "r") as f:
+            info_txt = [l_stripped for l in f.readlines() if (l_stripped := l.strip())]
+        organism_id = info_txt[0]
+        imodulons = [x.split(",", 1) for x in info_txt[1:]]
+        s[genome] = (organism_id, imodulons)
+    return s
 
 def genome_info(
     analysis_name,
@@ -65,6 +88,7 @@ def genome_info(
     gp_binary_path,
     summary_v2_path,
     gtdb_meta_path,
+    imodulon_dir_path,
     output_path,
 ):
     genome_summary = pd.read_csv(species_summary_path, index_col=0, low_memory=False)
@@ -82,6 +106,8 @@ def genome_info(
         ],
         axis=1,
     )
+
+    imodulon_structure = get_imodulon_structure(imodulon_dir_path)
 
     genome_info.rename(columns={"Country": "country", "full_name": "strain"}, inplace=True)
     genome_info.drop(["biosample_accession", "source"], axis=1, inplace=True)
@@ -113,6 +139,12 @@ def genome_info(
             genome_info_df["gene_class_distribution"] = gene_class_distribution
             gi_index = genome_info_df.index.tolist()
             genome_info_df = genome_info_df.reindex(gi_index[-4:] + gi_index[:-4])
+
+            if genome_id in imodulon_structure:
+                organism_id, imodulons = imodulon_structure[genome_id]
+                genome_info_df["imodulon_organism"] = organism_id
+                genome_info_df["imodulon_datasets"] = imodulons
+
             record = genome_info_df.to_dict()
             json.dump(
                 record,
@@ -133,6 +165,7 @@ def run(args):
         args.gp_binary,
         args.summary,
         args.gtdb_meta,
+        args.imodulon_dir,
         args.output,
     )
 

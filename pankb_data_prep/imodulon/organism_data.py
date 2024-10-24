@@ -50,6 +50,7 @@ def organism_data(
     if not analysis_name in IMODULON_DATA:
         touch(genome_list_path)
         Path(output_path).mkdir(parents=True, exist_ok=True)
+        return
     
     df_samples = pd.read_csv(samples_path, index_col="genome_id")
     
@@ -72,6 +73,11 @@ def organism_data(
             f"https://imodulondb.org/organisms/{organism_id}/annotation/gene_files/gene_info.csv",
             genome_path / "gene_info.csv"
         )
+
+        with open(genome_path / "info.txt", "w") as f:
+            f.write(f"{organism_id}\n")
+            for imodulon_id, imodulon_name in genome_data:
+                f.write(f"{imodulon_id},{imodulon_name}\n")
 
         for imodulon_id, imodulon_name in genome_data:
             imodulon_path = genome_path / imodulon_id

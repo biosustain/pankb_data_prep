@@ -45,6 +45,20 @@ def initialize_parser(parser):
         help="Locus tag mapping csv file.",
     )
     parser.add_argument(
+        "--imodulon_tag_mapping",
+        type=str,
+        required=False,
+        default=None,
+        help="Locus tag mapping csv file.",
+    )
+    parser.add_argument(
+        "--imodulon_dir",
+        type=str,
+        required=False,
+        default=None,
+        help="iModulonDB info dir.",
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -52,8 +66,30 @@ def initialize_parser(parser):
         help="Output jsonl.gz file.",
     )
 
+def get_imodulon_structure(imodulon_dir_path):
+    s = {}
+    if imodulon_dir_path is None:
+        return s
+    imodulon_dir_path = Path(imodulon_dir_path)
+    if not imodulon_dir_path.is_dir():
+        return s
+    imodulon_genomes = [x.name for x in imodulon_dir_path.iterdir() if x.is_dir()]
+    for genome in imodulon_genomes:
+        genome_path = imodulon_dir_path / genome
+        with open(genome_path / "info.txt", "r") as f:
+            info_txt = [l_stripped for l in f.readlines() if (l_stripped := l.strip())]
+        organism_id = info_txt[0]
+        imodulons = []
+        for x in info_txt[1:]:
+            imodulon_dataset_id, imodulon_dataset_name = x.split(",", 1)
+            df_iM_gene_presence = pd.read_csv(genome_path / imodulon_dataset_id / "gene_presence_list.csv", index_col="Gene")
+            df_iM_table = pd.read_csv(genome_path / imodulon_dataset_id / "iM_table.csv", index_col="k")            
+            imodulons.append((imodulon_dataset_id, imodulon_dataset_name, df_iM_gene_presence, df_iM_table))
+        s[genome] = (organism_id, imodulons)
+    return s
+
 def gene_info(
-    analysis_name, gp_locustag_path, all_locustag_path, fasta_dir, gtdb_meta_path, locus_tag_mapping_path, output_path
+    analysis_name, gp_locustag_path, all_locustag_path, fasta_dir, gtdb_meta_path, locus_tag_mapping_path, imodulon_tag_mapping_path, imodulon_dir_path, output_path
 ):
     fasta_dir = Path(fasta_dir)
     df_gene_presence_locustag = pd.read_csv(
@@ -77,10 +113,16 @@ def gene_info(
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
 
     df_locus_tag_mapping = pd.read_csv(locus_tag_mapping_path, index_col=["prokka_locus_tag","genome"])
+    if imodulon_tag_mapping_path is None:
+        df_imodulon_tag_mapping = None
+    else:
+        df_imodulon_tag_mapping = pd.read_csv(imodulon_tag_mapping_path, index_col=["prokka_locus_tag","genome"])
 
     species = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Organism"]).replace(
         "s__", ""
     )
+
+    imodulon_structure = get_imodulon_structure(imodulon_dir_path)
 
     with gzip.open(output_path, "wt") as f:
     # with open(output_path, "w") as f:
@@ -123,6 +165,35 @@ def gene_info(
                 row["original_locus_tag"] = lt_map["original_locus_tag"]
                 row["original_gene"] = lt_map["original_gene"]
                 row["original_exact_match"] = lt_map["exact_match"]
+            
+            if not df_imodulon_tag_mapping is None:
+                for ind, row in s_df.items():
+                    if not row["genome_id"] in imodulon_structure:
+                        continue
+                    try:
+                        lt_map = df_imodulon_tag_mapping.loc[(row["locus_tag"], row["genome_id"]), :]
+                    except:
+                        continue
+                    iM_locus_tag = lt_map["original_locus_tag"]
+
+                    organism_id, imodulon_datasets = imodulon_structure[row["genome_id"]]
+                    d = []
+                    for imodulon_dataset_id, imodulon_dataset_name, df_iM_gene_presence, df_iM_table in imodulon_datasets:
+                        if not iM_locus_tag in df_iM_gene_presence.index:
+                            continue
+                        iM_k = df_iM_gene_presence.loc[iM_locus_tag, "iModulon"]
+                        iM_name = df_iM_table.loc[iM_k, "name"]
+                        iM_data = {
+                            "locus_tag": iM_locus_tag,
+                            "organism": organism_id,
+                            "dataset": imodulon_dataset_id,
+                            "dataset_name": imodulon_dataset_name,
+                            "k": iM_k,
+                            "name": iM_name,
+                            "exact_match": lt_map["exact_match"],
+                        }
+                        d.append(iM_data)
+                    row["imodulon_data"] = d
 
             gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
 
@@ -155,6 +226,7 @@ def run(args):
         args.fasta_dir,
         args.gtdb_meta,
         args.locus_tag_mapping,
+        args.imodulon_dir,
         args.output,
     )
 

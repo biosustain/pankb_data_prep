@@ -41,6 +41,13 @@ def initialize_parser(parser):
         help="alleleome sel_genes csv file.",
     )
     parser.add_argument(
+        "--imodulon_genome_list",
+        type=str,
+        required=False,
+        default=None,
+        help="iModulon genome list",
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -61,6 +68,7 @@ def organism_info(
     gtdb_meta_path,
     filt_norm_path,
     sel_genes_path,
+    imodulon_genome_list_path,
     output_path,
 ):
     df_gp_binary = pd.read_csv(gp_binary_path, index_col="Gene", low_memory=False)
@@ -69,6 +77,14 @@ def organism_info(
     df_filt_norm = pd.read_csv(filt_norm_path, header=0, index_col=False, usecols=['Gene', 'Sequence_type'])
     df_filt_norm = df_filt_norm.loc[df_filt_norm["Sequence_type"] == "Variant", "Gene"]
     sel_genes = pd.read_csv(sel_genes_path, low_memory=False, index_col=0)
+
+    imodulon_genome_list = None
+    if not imodulon_genome_list_path is None:
+        try:
+            genome_list_df = pd.read_csv(imodulon_genome_list_path)
+            imodulon_genome_list = genome_list_df["genome_id"].to_list()
+        except:
+            pass
 
     genomes = df_gp_binary.columns.tolist()
     n_genomes = len(genomes)
@@ -110,6 +126,8 @@ def organism_info(
         "alleleomes_num": n_alleleomes,
         "mutations_num": n_muts,
     }
+    if not imodulon_genome_list is None:
+        json_data["imodulon_genomes"] = imodulon_genome_list
     with open(output_path, "w") as f:
         json.dump(json_data, f)
 
@@ -122,5 +140,6 @@ def run(args):
         args.gtdb_meta,
         args.filt_norm,
         args.sel_genes,
+        args.imodulon_genome_list,
         args.output,
     )
