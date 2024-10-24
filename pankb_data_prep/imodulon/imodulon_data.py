@@ -15,4 +15,10 @@ IMODULON_DATA = {
             ("precise148", "natPRECISE148"),
         ])
     },
+    "Limosilactobacillus_reuteri": {
+        "GCF_020785475.1": ("l_reuteri",
+        [
+            ("lactoprecise", "L. reuteri lactoPRECISE"),
+        ])
+    }
 }

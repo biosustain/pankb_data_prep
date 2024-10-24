@@ -160,6 +160,8 @@ def gene_info(
             s_df["species"] = species
             s_df["pangenome_analysis"] = analysis_name
 
+            gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
+
             for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
                 for basename in ["pan_genes", "others"]:
                     gene_fasta_path = fasta_dir / gene_id / f"{basename}.{ext}"
@@ -206,13 +208,11 @@ def gene_info(
                             "dataset_name": imodulon_dataset_name,
                             "k": iM_k,
                             "name": iM_name,
-                            "exact_match": lt_map["exact_match"],
+                            "exact_match": bool(lt_map["exact_match"]),
                         }
                         d.append(iM_data)
                     row["imodulon_data"] = d
                     # s_df[ind] = row
-
-            gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
 
             for record in s_dict: #s_df.to_dict(orient="records"):
                 json.dump(
