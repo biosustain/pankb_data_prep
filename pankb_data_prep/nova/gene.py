@@ -181,7 +181,7 @@ def gene_info(
                     continue
                 row["original_locus_tag"] = lt_map["original_locus_tag"]
                 row["original_gene"] = lt_map["original_gene"]
-                row["original_exact_match"] = lt_map["exact_match"]
+                row["original_exact_match"] = bool(lt_map["exact_match"])
                 # s_df[ind] = row
             
             if not df_imodulon_tag_mapping is None:
