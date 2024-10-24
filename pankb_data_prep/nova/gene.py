@@ -226,6 +226,7 @@ def run(args):
         args.fasta_dir,
         args.gtdb_meta,
         args.locus_tag_mapping,
+        args.imodulon_tag_mapping,
         args.imodulon_dir,
         args.output,
     )
