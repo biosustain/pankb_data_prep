@@ -160,7 +160,7 @@ def gene_info(
             s_df["species"] = species
             s_df["pangenome_analysis"] = analysis_name
 
-            for ind, row in s_df.items():
+            for ind, row in s_df.iterrows():
                 try:
                     lt_map = df_locus_tag_mapping.loc[(row["locus_tag"], row["genome_id"]), :]
                 except:
@@ -170,7 +170,7 @@ def gene_info(
                 row["original_exact_match"] = lt_map["exact_match"]
             
             if not df_imodulon_tag_mapping is None:
-                for ind, row in s_df.items():
+                for ind, row in s_df.iterrows():
                     if not row["genome_id"] in imodulon_structure:
                         continue
                     try:
