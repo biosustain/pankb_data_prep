@@ -199,15 +199,19 @@ def gene_info(
                     for imodulon_dataset_id, imodulon_dataset_name, df_iM_gene_presence, df_iM_table in imodulon_datasets:
                         if not iM_locus_tag in df_iM_gene_presence.index:
                             continue
+                        imodulons = []
                         iM_k = df_iM_gene_presence.loc[iM_locus_tag, "iModulon"]
-                        iM_name = df_iM_table.loc[iM_k, "name"]
+                        if isinstance(iM_k, int):
+                            imodulons.append({"k": iM_k, "name": df_iM_table.loc[iM_k, "name"]})
+                        else:
+                            for _, k in iM_k.items():
+                                imodulons.append({"k": int(k), "name": df_iM_table.loc[k, "name"]})
                         iM_data = {
                             "locus_tag": iM_locus_tag,
                             "organism": organism_id,
                             "dataset": imodulon_dataset_id,
                             "dataset_name": imodulon_dataset_name,
-                            "k": int(iM_k),
-                            "name": iM_name,
+                            "imodulons": imodulons,
                             "exact_match": bool(lt_map["exact_match"]),
                         }
                         d.append(iM_data)
