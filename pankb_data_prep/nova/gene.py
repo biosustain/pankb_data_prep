@@ -201,11 +201,11 @@ def gene_info(
                             continue
                         imodulons = []
                         iM_k = df_iM_gene_presence.loc[iM_locus_tag, "iModulon"]
-                        if isinstance(iM_k, int):
-                            imodulons.append({"k": iM_k, "name": df_iM_table.loc[iM_k, "name"]})
-                        else:
+                        if isinstance(iM_k, pd.Series):
                             for _, k in iM_k.items():
                                 imodulons.append({"k": int(k), "name": df_iM_table.loc[k, "name"]})
+                        else:
+                            imodulons.append({"k": int(iM_k), "name": df_iM_table.loc[int(iM_k), "name"]})
                         iM_data = {
                             "locus_tag": iM_locus_tag,
                             "organism": organism_id,
