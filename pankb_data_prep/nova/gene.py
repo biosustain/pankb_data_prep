@@ -160,7 +160,9 @@ def gene_info(
             s_df["species"] = species
             s_df["pangenome_analysis"] = analysis_name
 
-            for ind, row in s_df.iterrows():
+            s_dict = s_df.to_dict(orient="records")
+
+            for ind, row in s_dict.items():
                 try:
                     lt_map = df_locus_tag_mapping.loc[(row["locus_tag"], row["genome_id"]), :]
                 except:
@@ -168,10 +170,10 @@ def gene_info(
                 row["original_locus_tag"] = lt_map["original_locus_tag"]
                 row["original_gene"] = lt_map["original_gene"]
                 row["original_exact_match"] = lt_map["exact_match"]
-                s_df[ind] = row
+                # s_df[ind] = row
             
             if not df_imodulon_tag_mapping is None:
-                for ind, row in s_df.iterrows():
+                for ind, row in s_dict.items():
                     if not row["genome_id"] in imodulon_structure:
                         continue
                     try:
@@ -198,7 +200,7 @@ def gene_info(
                         }
                         d.append(iM_data)
                     row["imodulon_data"] = d
-                    s_df[ind] = row
+                    # s_df[ind] = row
 
             gene_locustag_only = [s.split("@", 1)[1] for s in gene_locustag]
 
@@ -210,9 +212,10 @@ def gene_info(
                             if record.id in gene_locustag_only:
                                 lt = gene_locustag[gene_locustag_only.index(record.id)]
                                 s = str(record.seq)
-                                s_df.loc[lt, k] = s
+                                # s_df.loc[lt, k] = s
+                                s_dict[lt][k] = s
 
-            for record in s_df.to_dict(orient="records"):
+            for record in s_dict.values(): #s_df.to_dict(orient="records"):
                 json.dump(
                     record,
                     f,
