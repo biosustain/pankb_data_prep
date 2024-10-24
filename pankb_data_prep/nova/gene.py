@@ -215,7 +215,8 @@ def gene_info(
                             "exact_match": bool(lt_map["exact_match"]),
                         }
                         d.append(iM_data)
-                    row["imodulon_data"] = d
+                    if d:
+                        row["imodulon_data"] = d
                     # s_df[ind] = row
 
             for record in s_dict: #s_df.to_dict(orient="records"):
