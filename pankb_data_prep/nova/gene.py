@@ -206,7 +206,7 @@ def gene_info(
                             "organism": organism_id,
                             "dataset": imodulon_dataset_id,
                             "dataset_name": imodulon_dataset_name,
-                            "k": iM_k,
+                            "k": int(iM_k),
                             "name": iM_name,
                             "exact_match": bool(lt_map["exact_match"]),
                         }
