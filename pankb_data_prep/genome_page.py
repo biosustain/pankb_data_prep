@@ -70,22 +70,23 @@ def generate_genome_page(
     #     species_info.genus + " " + species_info.species + " " + species_info.strain
     # )
     # species_info_selected = species_info.loc[list(isolation_src.index), :]
-    species_selection = list(isolation_src.index)
-    genome_info = pd.concat(
-        [
-            isolation_src.loc[species_selection, :],
-                genome_summary.loc[
-                    species_selection,
-                    ["source", "gc_content", "genome_len"],
-                ],
-                species_info.loc[species_selection, "full_name"]
-        ],
-        axis=1,
-    )
 
     apm_binary = pd.read_csv(gp_binary_path, index_col=0, low_memory=False)
     summary = pd.read_csv(summary_v2_path, index_col=0, low_memory=False)
     annotation = pd.read_csv(eggnog_summary_path, index_col=0, low_memory=False)
+
+    species_selection = set(apm_binary.columns)
+    genome_info = pd.concat(
+        [
+            isolation_src.loc[list(species_selection & set(isolation_src.index)), :],
+                genome_summary.loc[
+                    list(species_selection & set(genome_summary.index)),
+                    ["source", "gc_content", "genome_len"],
+                ],
+                species_info.loc[list(species_selection & set(species_info.index)), "full_name"]
+        ],
+        axis=1,
+    )
 
     annotation["COG_Categories"] = (
         "[" + annotation["COG_category"] + "]" + annotation["COG_category_name"]

@@ -208,6 +208,7 @@ def gene_info(
                             imodulons.append({"k": int(iM_k), "name": df_iM_table.loc[int(iM_k), "name"]})
                         iM_data = {
                             "locus_tag": iM_locus_tag,
+                            "gene": lt_map["original_gene"],
                             "organism": organism_id,
                             "dataset": imodulon_dataset_id,
                             "dataset_name": imodulon_dataset_name,

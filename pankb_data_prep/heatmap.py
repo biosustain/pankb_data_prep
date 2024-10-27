@@ -166,11 +166,11 @@ def generate_heatmap(
     #     + " "
     #     + species_info["strain"]
     # )
-    genomes = list(gp_locustag.columns)
+    genomes = set(gp_locustag.columns)
     source = pd.merge(
-        isolation_src.loc[genomes, :],
+        isolation_src.loc[list(genomes & set(isolation_src.index)), :],
         pd.merge(
-            species_info.loc[genomes, :],
+            species_info.loc[list(genomes & set(species_info.index)), :],
             phylo_group,
             on=["genome_id"],
         ),
