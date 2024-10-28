@@ -95,6 +95,9 @@ def genome_info(
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
     species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
 
+    if not "full_name" in species_info.columns:
+        species_info["full_name"] = (species_info["genus"] + " " + species_info["species"] + " " + species_info["strain"]).str.strip()
+
     apm_binary = pd.read_csv(gp_binary_path, index_col=0, low_memory=False)
     summary = pd.read_csv(summary_v2_path, index_col=0, low_memory=False)
     genome_id_list = apm_binary.columns
