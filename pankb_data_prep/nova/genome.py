@@ -94,15 +94,20 @@ def genome_info(
     genome_summary = pd.read_csv(species_summary_path, index_col=0, low_memory=False)
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
     species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
-    species_selection = list(isolation_src.index)
+
+    apm_binary = pd.read_csv(gp_binary_path, index_col=0, low_memory=False)
+    summary = pd.read_csv(summary_v2_path, index_col=0, low_memory=False)
+    genome_id_list = apm_binary.columns
+
+    species_selection = set(genome_id_list)
     genome_info = pd.concat(
         [
-            isolation_src.loc[species_selection, :],
+            isolation_src.loc[list(species_selection & set(isolation_src.index)), :],
                 genome_summary.loc[
-                    species_selection,
+                    list(species_selection & set(genome_summary.index)),
                     ["source", "gc_content", "genome_len"],
                 ],
-                species_info.loc[species_selection, "full_name"]
+                species_info.loc[list(species_selection & set(species_info.index)), "full_name"]
         ],
         axis=1,
     )
@@ -111,10 +116,6 @@ def genome_info(
 
     genome_info.rename(columns={"Country": "country", "full_name": "strain"}, inplace=True)
     genome_info.drop(["biosample_accession", "source"], axis=1, inplace=True)
-
-    apm_binary = pd.read_csv(gp_binary_path, index_col=0, low_memory=False)
-    summary = pd.read_csv(summary_v2_path, index_col=0, low_memory=False)
-    genome_id_list = apm_binary.columns
 
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
     species = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Organism"]).replace(
