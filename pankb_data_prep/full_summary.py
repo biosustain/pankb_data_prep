@@ -32,7 +32,7 @@ def full_summary_table(gtdb_meta_path, seqfu_stats_path, full_summary_path):
     df_seqfu = pd.read_csv(seqfu_stats_path, header=0, index_col=0, low_memory=False).loc[
         :, ["gc", "Total"]
     ]
-    df = df.join(df_seqfu)
+    df = df.join(df_seqfu, how="inner")
     df.rename(columns={"gc": "gc_content", "Total": "genome_size"}, inplace=True)
     df["source"] = "ncbi"
     # df["gc_content"] = round((df["gc_percentage"]) * 0.01, 3)
