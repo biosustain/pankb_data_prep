@@ -49,6 +49,12 @@ def initialize_parser(parser):
         help="GTDB meta csv file.",
     )
     parser.add_argument(
+        "--mash_list",
+        type=str,
+        required=True,
+        help="Mash list file.",
+    )
+    parser.add_argument(
         "--imodulon_dir",
         type=str,
         required=False,
@@ -88,12 +94,15 @@ def genome_info(
     gp_binary_path,
     summary_v2_path,
     gtdb_meta_path,
+    mash_list_path,
     imodulon_dir_path,
     output_path,
 ):
     genome_summary = pd.read_csv(species_summary_path, index_col=0, low_memory=False)
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
     species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
+    phylo_group = pd.read_csv(mash_list_path, index_col=0, low_memory=False)
+    phylo_group.rename(columns={"cluster": "phylo_group"}, inplace=True)
 
     if not "full_name" in species_info.columns:
         species_info["full_name"] = (species_info["genus"] + " " + species_info["species"] + " " + species_info["strain"]).str.strip()
@@ -106,11 +115,12 @@ def genome_info(
     genome_info = pd.concat(
         [
             isolation_src.loc[list(species_selection & set(isolation_src.index)), :],
-                genome_summary.loc[
-                    list(species_selection & set(genome_summary.index)),
-                    ["source", "gc_content", "genome_len"],
-                ],
-                species_info.loc[list(species_selection & set(species_info.index)), "full_name"]
+            genome_summary.loc[
+                list(species_selection & set(genome_summary.index)),
+                ["source", "gc_content", "genome_len"],
+            ],
+            species_info.loc[list(species_selection & set(species_info.index)), "full_name"],
+            phylo_group.loc[list(species_selection & set(phylo_group.index)), "phylo_group"]
         ],
         axis=1,
     )
@@ -169,6 +179,7 @@ def run(args):
         args.gp_binary,
         args.summary,
         args.gtdb_meta,
+        args.mash_list,
         args.imodulon_dir,
         args.output,
     )
