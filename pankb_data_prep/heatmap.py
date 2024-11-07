@@ -158,6 +158,10 @@ def generate_heatmap(
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
     species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
     species_info.index.name = "genome_id"
+    if not "full_name" in species_info.columns:
+        species_info["full_name"] = (
+            species_info.genus + " " + species_info.species + " " + species_info.strain
+        )
 
     # species_info["genome_name"] = (
     #     species_info["genus"]
