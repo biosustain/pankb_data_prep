@@ -121,9 +121,15 @@ def gene_info(
         except pd.errors.EmptyDataError:
             df_imodulon_tag_mapping = None
 
-    species = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Organism"]).replace(
+    gtdb_meta_info = None
+    for ind, info in df_gtdb_meta.iterrows():
+        if info["Organism"] != "s__":
+            gtdb_meta_info = info
+            break
+    species = str(gtdb_meta_info["Organism"]).replace(
         "s__", ""
     )
+    family = str(gtdb_meta_info["Family"]).replace("f__", "")
 
     imodulon_structure = get_imodulon_structure(imodulon_dir_path)
 

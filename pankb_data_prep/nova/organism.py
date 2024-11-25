@@ -92,8 +92,15 @@ def organism_info(
     n_alleleomes = int(sel_genes["Pan"].sum())
     n_muts = int(df_filt_norm.shape[0])
 
-    species = str(df_gtdb_meta.loc[genomes[0], "Organism"]).replace("s__", "")
-    family = str(df_gtdb_meta.loc[genomes[0], "Family"]).replace("f__", "")
+    gtdb_meta_info = None
+    for ind, info in df_gtdb_meta.iterrows():
+        if info["Organism"] != "s__":
+            gtdb_meta_info = info
+            break
+    species = str(gtdb_meta_info["Organism"]).replace(
+        "s__", ""
+    )
+    family = str(gtdb_meta_info["Family"]).replace("f__", "")
 
     core_len = int(
         df_pangene_summary.loc[

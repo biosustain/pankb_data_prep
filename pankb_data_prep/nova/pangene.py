@@ -141,10 +141,15 @@ def pangene_info(
     df = pd.merge(df, df_eggnog, on="locus_tag", how="left")
     df.set_index("Gene", inplace=True)
 
-    species = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Organism"]).replace(
+    gtdb_meta_info = None
+    for ind, info in df_gtdb_meta.iterrows():
+        if info["Organism"] != "s__":
+            gtdb_meta_info = info
+            break
+    species = str(gtdb_meta_info["Organism"]).replace(
         "s__", ""
     )
-    family = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Family"]).replace("f__", "")
+    family = str(gtdb_meta_info["Family"]).replace("f__", "")
 
     df[["COG_category", "COG_category_name", "uniq_COG_category_name"]] = df.apply(
         expand_cog_data, axis=1, result_type="expand"

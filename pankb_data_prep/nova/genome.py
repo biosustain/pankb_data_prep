@@ -131,9 +131,15 @@ def genome_info(
     genome_info.drop(["biosample_accession", "source"], axis=1, inplace=True)
 
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
-    species = str(df_gtdb_meta.loc[df_gtdb_meta.index[0], "Organism"]).replace(
+    gtdb_meta_info = None
+    for ind, info in df_gtdb_meta.iterrows():
+        if info["Organism"] != "s__":
+            gtdb_meta_info = info
+            break
+    species = str(gtdb_meta_info["Organism"]).replace(
         "s__", ""
     )
+    family = str(gtdb_meta_info["Family"]).replace("f__", "")
 
     # Loop for all genome in the species
     # Get COG distribution in one genome
