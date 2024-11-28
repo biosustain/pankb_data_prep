@@ -72,6 +72,8 @@ def gzip_file(input_path, output_path):
 
 def filter_cluster(l):
     top2 = pd.to_numeric(l).nlargest(2)
+    if len(top2) < 2:
+        return False
     if top2.iloc[0] >= 0.7 and top2.iloc[1] <= 0.3:
         return pd.to_numeric(l).idxmax()
     else:
