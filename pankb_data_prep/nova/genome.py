@@ -68,6 +68,13 @@ def initialize_parser(parser):
         required=True,
         help="Output file or directory.",
     )
+    parser.add_argument(
+        "--iso_output",
+        "-s",
+        type=str,
+        required=True,
+        help="Output file or directory.",
+    )
 
 def get_imodulon_structure(imodulon_dir_path):
     s = {}
@@ -96,7 +103,8 @@ def genome_info(
     gtdb_meta_path,
     mash_list_path,
     imodulon_dir_path,
-    output_path,
+    genome_output_path,
+    iso_output_path,
 ):
     genome_summary = pd.read_csv(species_summary_path, index_col=0, low_memory=False)
     isolation_src = pd.read_csv(isosource_path, index_col=0, low_memory=False)
@@ -143,37 +151,51 @@ def genome_info(
 
     # Loop for all genome in the species
     # Get COG distribution in one genome
-    with open(output_path, "w") as f:
-        for genome_id in genome_id_list:
-            presence_gene_list = list(
-                (apm_binary.loc[apm_binary[genome_id] == 1, genome_id]).index
-            )
-            gene_class_distribution = [
-                int((summary.loc[presence_gene_list, "pangenome_class_2"] == pclass).sum())
-                for pclass in ["Core", "Accessory", "Rare"]
-            ]
-            genome_info_df = genome_info.loc[genome_id, :].copy()
-            genome_info_df["genome_id"] = genome_id
-            genome_info_df["pangenome_analysis"] = analysis_name
-            genome_info_df["species"] = species
-            genome_info_df["gene_class_distribution"] = gene_class_distribution
-            gi_index = genome_info_df.index.tolist()
-            genome_info_df = genome_info_df.reindex(gi_index[-4:] + gi_index[:-4])
+    with open(genome_output_path, "w") as f_genome:
+        with open(iso_output_path, "w") as f_iso:
+            for genome_id in genome_id_list:
+                presence_gene_list = list(
+                    (apm_binary.loc[apm_binary[genome_id] == 1, genome_id]).index
+                )
+                gene_class_distribution = [
+                    int((summary.loc[presence_gene_list, "pangenome_class_2"] == pclass).sum())
+                    for pclass in ["Core", "Accessory", "Rare"]
+                ]
+                genome_info_df = genome_info.loc[genome_id, :].copy()
+                iso_info_df = genome_info[["country", "geo_loc_name", "isolation_source"]].copy()
+                iso_info_df["genome_id"] = genome_id
+                genome_info_df.drop(["country", "geo_loc_name", "isolation_source"], inplace=True)
+                genome_info_df["genome_id"] = genome_id
+                genome_info_df["pangenome_analysis"] = analysis_name
+                genome_info_df["species"] = species
+                genome_info_df["gene_class_distribution"] = gene_class_distribution
+                gi_index = genome_info_df.index.tolist()
+                genome_info_df = genome_info_df.reindex(gi_index[-4:] + gi_index[:-4])
 
-            if genome_id in imodulon_structure:
-                organism_id, imodulons = imodulon_structure[genome_id]
-                genome_info_df["imodulon_organism"] = organism_id
-                genome_info_df["imodulon_datasets"] = imodulons
+                if genome_id in imodulon_structure:
+                    organism_id, imodulons = imodulon_structure[genome_id]
+                    genome_info_df["imodulon_organism"] = organism_id
+                    genome_info_df["imodulon_datasets"] = imodulons
 
-            record = genome_info_df.to_dict()
-            json.dump(
-                record,
-                f,
-                separators=(",", ":"),
-                ensure_ascii=False,
-                indent=None,
-            )
-            f.write("\n")
+                genome_record = genome_info_df.to_dict()
+                json.dump(
+                    genome_record,
+                    f_genome,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                    indent=None,
+                )
+                f_genome.write("\n")
+
+                iso_record = iso_info_df.to_dict()
+                json.dump(
+                    iso_record,
+                    f_iso,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                    indent=None,
+                )
+                f_iso.write("\n")
 
 
 def run(args):
@@ -188,6 +210,7 @@ def run(args):
         args.mash_list,
         args.imodulon_dir,
         args.output,
+        args.iso_output,
     )
 
 
