@@ -4,6 +4,7 @@ import math
 import pandas as pd
 from Bio import SeqIO
 import argparse
+from .utilities import COG_DICT
 
 
 def initialize_parser(parser):
@@ -40,45 +41,6 @@ def initialize_parser(parser):
         help="Output file or directory.",
     )
 
-
-def get_cog_dict():
-    """
-    Get COG dict
-    """
-
-    cog_dict = {
-        "A": "RNA processing and modification",
-        "B": "Chromatin structure and dynamics",
-        "C": "Energy production and conversion",
-        "D": "Cell cycle control, cell division, chromosome partitioning",
-        "E": "Amino acid transport and metabolism",
-        "F": "Nucleotide transport and metabolism",
-        "G": "Carbohydrate transport and metabolism",
-        "H": "Coenzyme transport and metabolism",
-        "I": "Lipid transport and metabolism",
-        "J": "Translation, ribosomal structure and biogenesis",
-        "K": "Transcription",
-        "L": "Replication, recombination and repair",
-        "M": "Cell wall/membrane/envelope biogenesis",
-        "N": "Cell motility",
-        "O": "Post-translational modification, protein turnover, and chaperones",
-        "P": "Inorganic ion transport and metabolism",
-        "Q": "Secondary metabolites biosynthesis, transport, and catabolism",
-        "R": "General function prediction only",
-        "S": "Function unknown",
-        "T": "Signal transduction mechanisms",
-        "U": "Intracellular trafficking, secretion, and vesicular transport",
-        "V": "Defense mechanisms",
-        "W": "Extracellular structures",
-        "X": "Mobilome: prophages, transposons",
-        "Y": "Nuclear structure",
-        "Z": "Cytoskeleton",
-        "-": "Not found in COG",
-    }
-
-    return cog_dict
-
-
 def generate_eggnog_summary(
     gp_binary_path, summary_path, eggnog_table_path, reference_path, eggnog_summary_path
 ):
@@ -104,8 +66,6 @@ def generate_eggnog_summary(
         (df_roary_binary.sum(1) >= x15) & (df_roary_binary.sum(1) < x99)
     ]
 
-    cog_dict = get_cog_dict()
-
     # fasta_file = '/home/binhuan/data_pankb/bgcflow/data/interim/roary/' + species + '/pan_genome_reference.fa'
     recs = SeqIO.parse(reference_path, format="fasta")
     for seq in recs:
@@ -123,17 +83,17 @@ def generate_eggnog_summary(
 
             cog_cat = df_eggnog.loc[locus_tag, "COG_category"]
             if len(cog_cat) > 1:
-                cog_name = " | ".join([cog_dict[cog_letter] for cog_letter in cog_cat])
+                cog_name = " | ".join([COG_DICT[cog_letter] for cog_letter in cog_cat])
                 df_pangene_summary.loc[pan_gene_id, "COG_category_name"] = cog_name
                 df_pangene_summary.loc[pan_gene_id, "uniq_COG_category_name"] = (
                     "multi_COGs_" + str(len(cog_cat))
                 )
             else:
-                df_pangene_summary.loc[pan_gene_id, "COG_category_name"] = cog_dict[
+                df_pangene_summary.loc[pan_gene_id, "COG_category_name"] = COG_DICT[
                     cog_cat
                 ]
                 df_pangene_summary.loc[pan_gene_id, "uniq_COG_category_name"] = (
-                    cog_dict[cog_cat]
+                    COG_DICT[cog_cat]
                 )
         else:
             for col in df_eggnog.columns:

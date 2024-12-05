@@ -7,34 +7,37 @@ def get_genome_list(args):
         l = [genome.strip() for genome in f.readlines()]
     return l
 
-
-COG_TABLE = pd.DataFrame.from_dict(
-    {
+COG_DICT = {
         "A": "RNA processing and modification",
-        "B": "Chromatin Structure and dynamics",
+        "B": "Chromatin structure and dynamics",
         "C": "Energy production and conversion",
         "D": "Cell cycle control and mitosis",
-        "E": "Amino Acid metabolis and transport",
-        "F": "Nucleotide metabolism and transport",
-        "G": "Carbohydrate metabolism and transport",
-        "H": "Coenzyme metabolis",
-        "I": "Lipid metabolism",
-        "J": "Tranlsation",
+        "E": "Amino acid transport and metabolism",
+        "F": "Nucleotide transport and metabolism",
+        "G": "Carbohydrate transport and metabolism",
+        "H": "Coenzyme transport and metabolism",
+        "I": "Lipid transport and metabolism",
+        "J": "Translation, ribosomal structure and biogenesis",
         "K": "Transcription",
-        "L": "Replication and repair",
-        "M": "Cell wall/membrane/envelop biogenesis",
+        "L": "Replication, recombination and repair",
+        "M": "Cell wall/membrane/envelope biogenesis",
         "N": "Cell motility",
-        "O": "Post-translational modification, protein turnover, chaperone functions",
+        "O": "Post-translational modification, protein turnover, and chaperones",
         "P": "Inorganic ion transport and metabolism",
-        "Q": "Secondary Structure",
-        "T": "Signal Transduction",
+        "Q": "Secondary metabolites biosynthesis, transport, and catabolism",
+        "T": "Signal transduction",
         "U": "Intracellular trafficing and secretion",
+        "V": "Defense mechanisms",
+        "W": "Extracellular structures",
+        "X": "Mobilome: prophages, transposons",
         "Y": "Nuclear structure",
         "Z": "Cytoskeleton",
-        "R": "General Functional Prediction only",
-        "S": "Function Unknown",
+        "R": "General function prediction only",
+        "S": "Function unknown",
         "-": "Not found in COG",
-    },
+    }
+COG_TABLE = pd.DataFrame.from_dict(
+    COG_DICT,
     orient="index",
     columns=["Function details"],
 )
