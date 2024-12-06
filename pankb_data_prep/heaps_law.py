@@ -174,7 +174,7 @@ def heaps_law(gp_binary_path, gene_freq_path, cum_freq_path, heaps_law_path):
                 "max_frequency_count",
             ]
         }
-        json.dump(cum_freq_data, f)
+        json.dump(gene_freq_data, f)
 
     with open(cum_freq_path, "w") as f:
         cum_freq_data = {
