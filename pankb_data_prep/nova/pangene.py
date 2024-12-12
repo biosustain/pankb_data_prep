@@ -93,7 +93,7 @@ def pangene_info(
 ):
     df_summary = pd.read_csv(summary_v2_path, low_memory=False, index_col=0)
     gp_binary = pd.read_csv(gp_binary_path, low_memory=False, index_col=0)
-    gp_binary["Occurency"] = gp_binary.iloc[:, 1:].sum(axis=1)
+    gp_binary["Occurency"] = gp_binary.sum(axis=1)
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
 
     df_eggnog = pd.read_csv(
