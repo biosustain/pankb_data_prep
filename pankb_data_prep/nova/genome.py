@@ -164,6 +164,7 @@ def genome_info(
                 ]
                 genome_info_df = genome_info.loc[genome_id, :].copy()
                 iso_info_df = genome_info.loc[genome_id, ["country", "geo_loc_name", "isolation_source"]].copy()
+                iso_info_df.fillna(value="-", inplace=True)
                 iso_info_df["genome_id"] = genome_id
                 genome_info_df.drop(["country", "geo_loc_name", "isolation_source"], inplace=True)
                 genome_info_df["genome_id"] = genome_id
