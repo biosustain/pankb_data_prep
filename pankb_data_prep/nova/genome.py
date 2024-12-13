@@ -137,6 +137,7 @@ def genome_info(
 
     genome_info.rename(columns={"Country": "country", "full_name": "strain"}, inplace=True)
     genome_info.drop(["biosample_accession", "source"], axis=1, inplace=True)
+    genome_info["strain"] = genome_info["strain"].fillna(value="-")
 
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
     gtdb_meta_info = None
