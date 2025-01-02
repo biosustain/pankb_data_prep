@@ -7,6 +7,16 @@ from io import StringIO
 from ratelimiter import RateLimiter
 from ..utilities import COG_DICT
 
+def remove_special_char(s):
+    if "/" in str(s):
+        return s.replace("/", "_")
+    elif "'" in str(s):
+        return s.replace("'", "_variant")
+    elif "(" in str(s):
+        s = s.replace("(", "_")
+        return s.replace(")", "")
+    else:
+        return s
 
 def initialize_parser(parser):
     parser.description = "Process pangene data."
@@ -108,6 +118,7 @@ def pangene_info(
     df = pd.merge(df_summary, gp_binary[["Occurency"]], on="Gene", how="left")
     df.reset_index(inplace=True)
     df = pd.merge(df, df_eggnog, on="locus_tag", how="left")
+    df["Gene"] = df["Gene"].apply(remove_special_char)
     df.set_index("Gene", inplace=True)
 
     gtdb_meta_info = None
