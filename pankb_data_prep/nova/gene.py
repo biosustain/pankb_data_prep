@@ -66,6 +66,17 @@ def initialize_parser(parser):
         help="Output jsonl.gz file.",
     )
 
+def remove_special_char(s):
+    if "/" in str(s):
+        return s.replace("/", "_")
+    elif "'" in str(s):
+        return s.replace("'", "_variant")
+    elif "(" in str(s):
+        s = s.replace("(", "_")
+        return s.replace(")", "")
+    else:
+        return s
+
 def get_imodulon_structure(imodulon_dir_path):
     s = {}
     if imodulon_dir_path is None:
@@ -170,7 +181,7 @@ def gene_info(
 
             for k, ext in [("nucleotide_seq", "fna"), ("aminoacid_seq", "faa")]:
                 for basename in ["pan_genes", "others"]:
-                    gene_fasta_path = fasta_dir / gene_id / f"{basename}.{ext}"
+                    gene_fasta_path = fasta_dir / remove_special_char(gene_id) / f"{basename}.{ext}"
                     if gene_fasta_path.is_file():
                         for record in SeqIO.parse(gene_fasta_path, "fasta"):
                             if record.id in gene_locustag_only:
