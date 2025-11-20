@@ -62,6 +62,13 @@ def initialize_parser(parser):
         help="Directory contain iModulonDB info."
     )
     parser.add_argument(
+        "--qc_report",
+        type=str,
+        required=False,
+        default=None,
+        help="QC full report csv file containing num_contigs, N50, Completeness, Contamination."
+    )
+    parser.add_argument(
         "--output",
         "-o",
         type=str,
@@ -103,6 +110,7 @@ def genome_info(
     gtdb_meta_path,
     mash_list_path,
     imodulon_dir_path,
+    qc_report_path,
     genome_output_path,
     iso_output_path,
 ):
@@ -111,6 +119,10 @@ def genome_info(
     species_info = pd.read_csv(species_info_path, index_col=0, low_memory=False)
     phylo_group = pd.read_csv(mash_list_path, index_col=0, low_memory=False)
     phylo_group.rename(columns={"cluster": "phylo_group"}, inplace=True)
+
+    # Load QC data 
+    qc_fields = ['num_contigs', 'N50', 'Completeness', 'Contamination']
+    qc_data = pd.read_csv(qc_report_path, index_col=0, low_memory=False)
 
     if not "full_name" in species_info.columns:
         species_info["full_name"] = (species_info["genus"] + " " + species_info["species"] + " " + species_info["strain"]).str.strip()
@@ -179,6 +191,10 @@ def genome_info(
                     genome_info_df["imodulon_organism"] = organism_id
                     genome_info_df["imodulon_datasets"] = imodulons
 
+                # Add QC data
+                for field in qc_fields:
+                    genome_info_df[field] = qc_data.loc[genome_id, field]
+
                 genome_record = genome_info_df.to_dict()
                 json.dump(
                     genome_record,
@@ -211,6 +227,7 @@ def run(args):
         args.gtdb_meta,
         args.mash_list,
         args.imodulon_dir,
+        args.qc_report,
         args.output,
         args.iso_output,
     )
