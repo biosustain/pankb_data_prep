@@ -1,14 +1,11 @@
-import os
-import logging
 import pandas as pd
 import requests
-from bs4 import BeautifulSoup
 from .utilities import get_genome_list
 import argparse
 
 
 def initialize_parser(parser):
-    parser.description = "Fetch the source of the isolates form NCBI."
+    parser.description = "Fetch the source of the isolates from NCBI."
     parser.add_argument(
         "--genomes",
         "-g",
@@ -25,94 +22,71 @@ def initialize_parser(parser):
     )
 
 
-def get_biosample_accession(assembly_id):
-    # NCBI Datasets API endpoint for genome assembly summary
-    url = f"https://api.ncbi.nlm.nih.gov/datasets/v1/genome/accession/{assembly_id}?format=json"
+def get_biosample_info(assembly_id):
+    """
+    Fetch biosample info from NCBI Datasets API v2alpha.
+    Returns a dict with biosample_accession, isolation_source, geo_loc_name, and Country.
+    """
+    url = f"https://api.ncbi.nlm.nih.gov/datasets/v2alpha/genome/accession/{assembly_id}/dataset_report"
 
-    # Make the API request
-    response = requests.get(url)
+    try:
+        response = requests.get(url, timeout=30)
+        if response.status_code != 200:
+            return {
+                "biosample_accession": "Missing",
+                "isolation_source": "Failed to retrieve the data",
+                "geo_loc_name": "Failed to retrieve the data",
+                "Country": "Failed to retrieve the data",
+            }
 
-    # Check if the request was successful
-    if response.status_code != 200:
-        return "Missing"
+        data = response.json()
+        reports = data.get("reports", [])
+        if not reports:
+            return {
+                "biosample_accession": "Missing",
+                "isolation_source": "Missing",
+                "geo_loc_name": "Missing",
+                "Country": "Missing",
+            }
 
-    # Parse the JSON response
-    data = response.json()
+        biosample = reports[0].get("assembly_info", {}).get("biosample", {})
+        biosample_accession = biosample.get("accession", "Missing")
+        isolation_source = biosample.get("isolation_source", "Missing")
+        geo_loc_name = biosample.get("geo_loc_name", "Missing")
 
-    biosample_accession = data["assemblies"][0]["assembly"]["biosample"]["accession"]
-    return biosample_accession
+        # Extract country from geo_loc_name (format: "Country:Region:City")
+        if geo_loc_name and geo_loc_name != "Missing":
+            country = geo_loc_name.split(":")[0]
+        else:
+            country = "Missing"
 
+        return {
+            "biosample_accession": biosample_accession,
+            "isolation_source": isolation_source,
+            "geo_loc_name": geo_loc_name,
+            "Country": country,
+        }
 
-def get_isolation_source(biosample_id):
-    url = f"https://www.ncbi.nlm.nih.gov/biosample/{biosample_id}/"
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        return "Failed to retrieve the data"
-
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    # Debug: Print raw HTML to verify the content
-    # print(soup.prettify())
-
-    data_elements = soup.find_all("tr")
-    data = {}
-    for element in data_elements:
-        labels = element.find_all("th")
-        values = element.find_all("td")
-
-        for label, value in zip(labels, values):
-            key = label.get_text(strip=True)
-            val = value.get_text(strip=True)
-            data[key] = val
-
-    return data.get("isolation source", "Missing")
-
-
-def get_geo_loc_name(biosample_id):
-    url = f"https://www.ncbi.nlm.nih.gov/biosample/{biosample_id}/"
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        return "Failed to retrieve the data"
-
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    # Debug: Print raw HTML to verify the content
-    # print(soup.prettify())
-
-    data_elements = soup.find_all("tr")
-    data = {}
-    for element in data_elements:
-        labels = element.find_all("th")
-        values = element.find_all("td")
-
-        for label, value in zip(labels, values):
-            key = label.get_text(strip=True)
-            val = value.get_text(strip=True)
-            data[key] = val
-
-    return data.get("geographic location", "Missing")
-
-
-def get_country(s):
-    if s == "Missing":
-        return s
-    else:
-        return s.split(":")[0]
+    except Exception as e:
+        return {
+            "biosample_accession": "Missing",
+            "isolation_source": "Failed to retrieve the data",
+            "geo_loc_name": "Failed to retrieve the data",
+            "Country": "Failed to retrieve the data",
+        }
 
 
 def find_isolation_source(genome_ids, isolation_source_path):
-    samples = pd.DataFrame({"genome_id": genome_ids})
-    samples["biosample_accession"] = samples["genome_id"].apply(get_biosample_accession)
-    samples["isolation_source"] = samples["biosample_accession"].apply(
-        get_isolation_source
-    )
-    samples["geo_loc_name"] = samples["biosample_accession"].apply(get_geo_loc_name)
-    samples["Country"] = samples["geo_loc_name"].apply(get_country)
+    results = []
+    for genome_id in genome_ids:
+        info = get_biosample_info(genome_id)
+        info["genome_id"] = genome_id
+        results.append(info)
 
+    samples = pd.DataFrame(results)
+    # Reorder columns to match original output format
+    samples = samples[["genome_id", "biosample_accession", "isolation_source", "geo_loc_name", "Country"]]
     samples.to_csv(isolation_source_path, index=False)
-    # samples.to_csv('../data/source_info/' + genus + '/df_ncbi_isolation_src.csv', index = False)
 
 
 def run(args):
