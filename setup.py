@@ -11,6 +11,7 @@ setup(
         "beautifulsoup4==4.12.3",
         "biopython==1.83",
         "scikit-learn==1.5.0",
+        "country_converter==1.3.2",
     ],
     package_data={"pankb_data_prep": []},
     entry_points={"console_scripts": ["pankb_data_prep=pankb_data_prep.cli:main", "pankb_nova=pankb_data_prep.nova_cli:main", "pankb_imodulon=pankb_data_prep.imodulon_cli:main"]},
