@@ -4,7 +4,6 @@ import numpy as np
 from pathlib import Path
 import argparse
 import gzip
-import country_converter as coco
 
 def initialize_parser(parser):
     parser.description = "Process data required for genome pages."
@@ -152,12 +151,6 @@ def genome_info(
     genome_info.drop(["biosample_accession", "source"], axis=1, inplace=True)
     genome_info["strain"] = genome_info["strain"].fillna(value="-")
 
-    # Convert country names to ISO 3166-1 alpha-2 codes
-    cc = coco.CountryConverter()
-    genome_info["country_code"] = genome_info["country"].apply(
-        lambda x: cc.convert(x, to="ISO2", not_found="missing").lower()
-    )
-
     df_gtdb_meta = pd.read_csv(gtdb_meta_path, low_memory=False, index_col=0)
     gtdb_meta_info = None
     for ind, info in df_gtdb_meta.iterrows():
@@ -182,10 +175,10 @@ def genome_info(
                     for pclass in ["Core", "Accessory", "Rare"]
                 ]
                 genome_info_df = genome_info.loc[genome_id, :].copy()
-                iso_info_df = genome_info.loc[genome_id, ["country_code", "geo_loc_name", "isolation_source"]].copy()
+                iso_info_df = genome_info.loc[genome_id, ["country", "geo_loc_name", "isolation_source"]].copy()
                 iso_info_df.fillna(value="-", inplace=True)
                 iso_info_df["genome_id"] = genome_id
-                genome_info_df.drop(["country", "country_code", "geo_loc_name", "isolation_source"], inplace=True)
+                genome_info_df.drop(["country", "geo_loc_name", "isolation_source"], inplace=True)
                 genome_info_df["genome_id"] = genome_id
                 genome_info_df["pangenome_analysis"] = analysis_name
                 genome_info_df["species"] = species
